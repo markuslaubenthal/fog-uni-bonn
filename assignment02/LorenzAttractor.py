@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.integrate import odeint
-
+# authors: Bilal Kizilkaya Markus Laubenthal und Lennard Alms
 
 def LorenzAttractor(t, X):
 	"""
@@ -48,9 +48,20 @@ def RungeKutta4thOrder(f, y0, stepsize, steps):
 	stepsize:	Delta for each step
 	steps:		Amount of integration steps
 	"""
-	x = np.zeros((3, steps))
-	# your code goes here...
-	return x
+	path = np.zeros((3, steps))
+	#Starting Position
+	pos = y0
+
+	for t in range(steps):
+		h0 = f(t, pos)
+		h1 = f(t, pos + h0*stepsize/2)
+		h2 = f(t, pos + h1*stepsize/2)
+		h3 = f(t, pos + stepsize * h2)
+		pos += stepsize * 1/6 * (h0 + 2*h1 + 2*h2 + h3)
+		path[0][t] = pos[0]
+		path[1][t] = pos[1]
+		path[2][t] = pos[2]
+	return path
 
 
 # Compute Values
