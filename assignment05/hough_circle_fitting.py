@@ -8,7 +8,7 @@ Created on Mon Nov 23 15:59:44 2015
 import numpy as np
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
-from skimage import feature, io
+from skimage import feature, io, draw
 from skimage.filters import sobel
 from math import pi, radians, cos, sin
 
@@ -20,7 +20,34 @@ from scipy.stats import multivariate_normal
 # Implement a function that, given an edge image and a range of radii, performs the Circular Hough Transform to create an accumulation array containing the votes for circles centered at the specific pixel and with a specific radius.
 def hough_circles(edge_map, radius_range):
 	# you can compare you solution, to a reference implementation:
-	acc = hough_circle(edge_map, radius_range) # <- remove this
+	#acc = hough_circle(edge_map, radius_range) # <- remove this
+	angles = np.arange(0, (2. - 2. / 360) * np.pi, 1. / 360)
+
+	print(edge_map.shape)
+
+	acc = np.zeros((radius_range.shape[0], edge_map.shape[0], edge_map.shape[1])).astype(np.float32)
+
+	for i, radius in enumerate(radius_range):
+		print(i)
+		with np.nditer(edge_map, flags=['multi_index']) as it:
+			for px in it:
+				if px > 0:
+					rr, cc= draw.circle_perimeter(it.multi_index[1],it.multi_index[0],radius)
+					rr_FilterIndex = np.where((rr >= edge_map.shape[1]) | (rr < 0))
+					cc_FilterIndex = np.where((cc >= edge_map.shape[0]) | (cc < 0))
+					val_FilterIndex = np.append(rr_FilterIndex, cc_FilterIndex)
+					rr = np.delete(rr, val_FilterIndex)
+					cc = np.delete(cc, val_FilterIndex)
+
+					#print(rr, cc)
+
+					acc[i,cc,rr] += 1
+
+					#skimage.draw
+					#acc[i] += (radius * np.cos(angles) + it.multi_index[0], radius * np.sin(angles) + it.multi_index[1])
+		print(acc[i])
+	acc /= acc.max()
+
 
 	# TODO: remove above line and implement your own Hough Transformation:
 	# acc = ...
@@ -94,6 +121,8 @@ ax1.scatter(x=edge_points[1], y=edge_points[0], c='b', s=1, linewidths=0)
 ax1.set_title("Circles")
 fh.canvas.draw()
 
+
+
 # fit circles
 # total number of circles to extract
 num_circles = 10
@@ -106,7 +135,7 @@ acc = hough_circles(em, hough_radii)
 
 # let's inspect the accumulation array by displaying some slices (needs to be implemented above)
 display_acc_slices(acc, hough_radii)
-
+#
 # implement this: find local maxima in the hough accumulation array acc and extract the corresponding circle parameters (i.e. center x- & y-coordinate and radius) as well as each circle's voting score
 # this should become a (num_circles x 2) array, storing the center coordinates in its colums
 centers = []
@@ -116,7 +145,7 @@ radii = []
 scores = []
 
 # perform slight smoothing in hough space
-acc = ndim.filters.gaussian_filter(acc, sigma=0.5)
+#acc = ndim.filters.gaussian_filter(acc, sigma=0.5)
 #display_acc_slices(acc, hough_radii)
 
 # find local maxima
@@ -160,5 +189,6 @@ radii = radii[idxs[::-1]]
 scores = scores[idxs[::-1]]
 
 
-# display results
+#display results
 draw_circle(ax1, centers[:, 0], centers[:, 1], radii, scores)
+plt.show()
