@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Nov 23 15:59:44 2015
-
-@author: merzbach
+@author: Lennard Alms, Markus Laubenthal, Bilal Kizilkaya
 """
 
 import numpy as np
